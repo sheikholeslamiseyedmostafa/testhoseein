@@ -26,14 +26,7 @@ GRANT ALL PRIVILEGES ON accounting.* TO 'accounting'@'localhost';</pre>
 <form method="post" action="<?= e(url('setup/store')) ?>" class="card form narrow-form" autocomplete="off">
     <?= csrf_field() ?>
 
-    <h2>مرحله ۲: کد نصب</h2>
-    <label>
-        <span>کد نصب</span>
-        <input type="text" name="setup_token" required dir="ltr" maxlength="64" autocomplete="off" spellcheck="false">
-        <small class="muted">کد نصب در فایل <code>storage/setup-token.txt</code> داخل پوشه‌ی پروژه روی سرور نوشته شده است. پس از نصب این فایل حذف می‌شود.</small>
-    </label>
-
-    <h2>مرحله ۳: مشخصات برنامه و پایگاه داده</h2>
+    <h2>مشخصات برنامه و پایگاه داده</h2>
     <label>
         <span>نام برنامه</span>
         <input type="text" name="app_name" value="<?= e($v('app_name')) ?>" required maxlength="100">
@@ -60,7 +53,7 @@ GRANT ALL PRIVILEGES ON accounting.* TO 'accounting'@'localhost';</pre>
         <input type="password" name="db_password" dir="ltr" maxlength="200" autocomplete="off">
     </label>
 
-    <h2>مرحله ۴: حساب مدیر</h2>
+    <h2>حساب مدیر</h2>
     <label>
         <span>نام کاربری مدیر</span>
         <input type="text" name="admin_username" value="<?= e($v('admin_username')) ?>" required dir="ltr" maxlength="50" pattern="[A-Za-z0-9_.\-]{3,50}" autocomplete="off">

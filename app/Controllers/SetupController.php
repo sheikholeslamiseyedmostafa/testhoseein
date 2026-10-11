@@ -16,8 +16,8 @@ use Throwable;
 /**
  * صفحه‌ی نصب تحت وب.
  * - فقط تا وقتی config/config.php نباشد در دسترس است؛ بعد از نصب، 404 می‌دهد.
- * - برای جلوگیری از نصب توسط غریبه‌ها، کد نصب تصادفی در storage/setup-token.txt نوشته می‌شود
- *   و فقط کسی که به فایل‌های سرور دسترسی دارد می‌تواند آن را بخواند. پس از نصب موفق، فایل حذف می‌شود.
+ * - کد نصب لازم نیست؛ بعد از ساخت config.php، این صفحه غیرفعال می‌شود.
+ *   اگر پایگاه داده از قبل کاربر داشته باشد، نصب دوباره انجام نمی‌شود.
  */
 final class SetupController extends Controller
 {
@@ -28,11 +28,6 @@ final class SetupController extends Controller
     {
         $this->guardNotInstalled();
         $errors = [];
-        try {
-            $this->ensureSetupToken();
-        } catch (RuntimeException $e) {
-            $errors[] = $e->getMessage();
-        }
         if (($problem = self::sessionProblem()) !== null) {
             $errors[] = $problem;
         }
@@ -48,9 +43,8 @@ final class SetupController extends Controller
     {
         $this->guardNotInstalled();
 
-        $expected = $this->readSetupToken();
         $values = $this->collectValues();
-        $errors = $this->validate($values, $expected);
+        $errors = $this->validate($values);
         $manualConfig = null;
 
         $db = [
@@ -123,9 +117,6 @@ final class SetupController extends Controller
             return;
         }
 
-        if (is_file(self::tokenPath())) {
-            @unlink(self::tokenPath());
-        }
         flash('success', 'نصب با موفقیت انجام شد. با نام کاربری و رمز مدیر وارد شوید.');
         redirect('login');
     }
@@ -175,32 +166,10 @@ final class SetupController extends Controller
         }
     }
 
-    private static function tokenPath(): string
-    {
-        return APP_ROOT . '/storage/setup-token.txt';
-    }
-
-    private function ensureSetupToken(): void
-    {
-        if (is_file(self::tokenPath())) {
-            return;
-        }
-        $token = rtrim(strtr(base64_encode(random_bytes(12)), '+/', '-_'), '=');
-        if (file_put_contents(self::tokenPath(), $token . "\n", LOCK_EX) === false) {
-            throw new RuntimeException('ساخت فایل کد نصب ممکن نیست. دسترسی نوشتن روی پوشه storage را بررسی کنید.');
-        }
-    }
-
-    private function readSetupToken(): string
-    {
-        return is_file(self::tokenPath()) ? trim((string) file_get_contents(self::tokenPath())) : '';
-    }
-
     /** @return array<string,string> */
     private function collectValues(): array
     {
         return [
-            'setup_token'            => $this->postString('setup_token', 64),
             'app_name'               => $this->postString('app_name', 100),
             'db_host'                => $this->postString('db_host', 255),
             'db_port'                => $this->postString('db_port', 5),
@@ -224,15 +193,9 @@ final class SetupController extends Controller
      * @param array<string,string> $v
      * @return list<string>
      */
-    private function validate(array $v, string $expectedToken): array
+    private function validate(array $v): array
     {
         $errors = [];
-
-        if ($expectedToken === '') {
-            $errors[] = 'فایل کد نصب پیدا نشد. صفحه‌ی نصب را دوباره باز کنید تا فایل ساخته شود.';
-        } elseif ($v['setup_token'] === '' || !hash_equals($expectedToken, $v['setup_token'])) {
-            $errors[] = 'کد نصب نادرست است. کد را از فایل storage/setup-token.txt روی سرور بخوانید.';
-        }
 
         if ($v['db_host'] === '') {
             $errors[] = 'نشانی سرور پایگاه داده را وارد کنید.';
@@ -290,13 +253,13 @@ final class SetupController extends Controller
     }
 
     /**
-     * مقادیر فرم برای نمایش دوباره؛ رمزها و کد نصب عمداً برنمی‌گردند.
+     * مقادیر فرم برای نمایش دوباره؛ رمزها عمداً برنمی‌گردند.
      * @param array<string,string> $values
      * @return array<string,string>
      */
     private function safeValues(array $values): array
     {
-        unset($values['db_password'], $values['admin_password'], $values['admin_password_confirm'], $values['setup_token']);
+        unset($values['db_password'], $values['admin_password'], $values['admin_password_confirm']);
         return $values;
     }
 }

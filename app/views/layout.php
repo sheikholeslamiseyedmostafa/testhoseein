@@ -1,25 +1,71 @@
 <?php
-/** @var string $content @var array|null $user @var string|null $title */
+/** @var string $content @var array|null $user @var string|null $title @var array $errors */
 $appName = (string) config('app_name', 'حسابداری');
 $pageTitle = isset($title) && $title !== '' ? $title . ' · ' . $appName : $appName;
 $currentRoute = is_string($_GET['r'] ?? null) ? $_GET['r'] : 'dashboard';
-$navActive = static function (string ...$prefixes) use ($currentRoute): string {
+$isActive = static function (string ...$prefixes) use ($currentRoute): bool {
     foreach ($prefixes as $prefix) {
-        if ($currentRoute === $prefix || str_starts_with($currentRoute, $prefix . '/')) {
-            return ' class="active" aria-current="page"';
+        if ($prefix !== '' && ($currentRoute === $prefix || str_starts_with($currentRoute, $prefix . '/'))) {
+            return true;
         }
     }
-    return '';
+    return false;
 };
-// منوی کناری: مسیر، برچسب، آیکون، و سطح دسترسی لازم (خالی = همه‌ی کاربران واردشده)
-$navItems = [
-    ['dashboard', 'داشبورد', 'dashboard', '', 'dashboard'],
-    ['accounts', 'چارت حساب‌ها', 'accounts', 'view', 'accounts'],
-    ['vouchers', 'اسناد', 'vouchers', 'view', 'vouchers'],
-    ['reports/ledger', 'دفتر کل', 'ledger', 'view', 'reports/ledger'],
-    ['reports/trial', 'تراز آزمایشی', 'trial', 'view', 'reports/trial'],
-    ['users', 'کاربران', 'users', 'admin', 'users'],
+
+/**
+ * منوی کناری.
+ * - route: مسیر فعال. null یعنی بخش هنوز ساخته نشده و با برچسب «به‌زودی» نشان داده می‌شود.
+ * - access: سطح دسترسی لازم ('' یعنی همه‌ی کاربران واردشده).
+ */
+$menu = [
+    ['link', 'داشبورد', 'dashboard', 'dashboard', '', 'dashboard'],
+    ['group', 'اطلاعات پایه', 'database', [
+        ['اشخاص', 'users', null, ''],
+        ['بانک و صندوق', 'bank', null, ''],
+        ['کالا و خدمات', 'box', null, ''],
+        ['سرفصل حساب‌ها', 'accounts', 'accounts', 'view'],
+        ['پروژه‌ها', 'folder', null, ''],
+        ['مراکز هزینه', 'chart', null, ''],
+        ['واحدهای سنجش', 'ruler', null, ''],
+        ['ارزها', 'dollar', null, ''],
+        ['مالیات و عوارض', 'percent', null, ''],
+        ['روش‌های پرداخت', 'card', null, ''],
+        ['سال مالی', 'calendar', null, ''],
+        ['تنظیمات پایه', 'gear', null, ''],
+    ]],
+    ['group', 'حسابداری', 'vouchers', [
+        ['اسناد', 'vouchers', 'vouchers', 'view'],
+    ]],
+    ['link', 'خزانه', 'wallet', null, '', ''],
+    ['link', 'فروش', 'cart', null, '', ''],
+    ['link', 'خرید', 'truck', null, '', ''],
+    ['link', 'انبار', 'box', null, '', ''],
+    ['group', 'گزارشات', 'chart', [
+        ['دفتر کل', 'ledger', 'reports/ledger', 'view'],
+        ['تراز آزمایشی', 'trial', 'reports/trial', 'view'],
+    ]],
+    ['group', 'تنظیمات', 'gear', [
+        ['کاربران', 'users', 'users', 'admin'],
+        ['تغییر رمز', 'key', 'password', ''],
+    ]],
+    ['link', 'هوش مصنوعی', 'cpu', null, '', ''],
 ];
+
+/** آیا این آیتم برای کاربر فعلی قابل نمایش است؟ */
+$visible = static fn(string $access): bool => $access === '' || can($access);
+
+/** نمایش یک آیتم (لینک فعال یا برچسب «به‌زودی») */
+$renderItem = static function (string $label, string $iconName, ?string $route, string $access, bool $isSub = false) use ($isActive): void {
+    $class = $isSub ? 'nav-link nav-sub-link' : 'nav-link';
+    if ($route === null) {
+        echo '<span class="' . $class . ' is-soon" aria-disabled="true">'
+            . icon($iconName) . '<span>' . e($label) . '</span>'
+            . '<span class="nav-soon">به‌زودی</span></span>';
+        return;
+    }
+    $current = $isActive($route) ? ' class="' . $class . ' active" aria-current="page"' : ' class="' . $class . '"';
+    echo '<a href="' . e(url($route)) . '"' . $current . '>' . icon($iconName) . '<span>' . e($label) . '</span></a>';
+};
 ?>
 <!doctype html>
 <html lang="fa" dir="rtl">
@@ -28,7 +74,7 @@ $navItems = [
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title><?= e($pageTitle) ?></title>
     <meta name="description" content="نرم‌افزار حسابداری دوطرفه با گزارش دفتر کل و تراز آزمایشی">
-    <meta name="theme-color" content="#2563eb">
+    <meta name="theme-color" content="#0c2657">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -49,23 +95,48 @@ $navItems = [
             <span class="brand-mark"><?= icon('logo') ?></span>
             <span class="brand-text">
                 <strong><?= e($appName) ?></strong>
-                <small>مدیریت مالی و حسابداری</small>
+                <small>نرم‌افزار حسابداری</small>
             </span>
         </a>
 
         <nav class="nav" aria-label="بخش‌های برنامه">
-            <?php foreach ($navItems as [$route, $label, $iconName, $access, $prefix]): ?>
-                <?php if ($access === '' || can($access)): ?>
-                    <a href="<?= e(url($route)) ?>" class="nav-link"<?= $navActive($prefix) ?>>
-                        <?= icon($iconName) ?>
-                        <span><?= e($label) ?></span>
-                    </a>
+            <?php foreach ($menu as $entry): ?>
+                <?php if ($entry[0] === 'link'): ?>
+                    <?php [, $label, $iconName, $route, $access] = $entry; ?>
+                    <?php if ($route === null || $visible($access)): ?>
+                        <?php $renderItem($label, $iconName, $route, $access); ?>
+                    <?php endif; ?>
+                <?php else: ?>
+                    <?php
+                    [, $label, $iconName, $children] = $entry;
+                    $shown = array_values(array_filter($children, static fn(array $c): bool => $c[2] === null || $visible($c[3])));
+                    $open = false;
+                    foreach ($shown as $c) {
+                        if ($c[2] !== null && $isActive($c[2])) {
+                            $open = true;
+                        }
+                    }
+                    ?>
+                    <?php if ($shown !== []): ?>
+                    <details class="nav-group"<?= $open ? ' open' : '' ?>>
+                        <summary class="nav-link">
+                            <?= icon($iconName) ?>
+                            <span><?= e($label) ?></span>
+                            <?= icon('chev', 'icon chev') ?>
+                        </summary>
+                        <div class="nav-sub">
+                            <?php foreach ($shown as [$childLabel, $childIcon, $childRoute]): ?>
+                                <?php $renderItem($childLabel, $childIcon, $childRoute, '', true); ?>
+                            <?php endforeach; ?>
+                        </div>
+                    </details>
+                    <?php endif; ?>
                 <?php endif; ?>
             <?php endforeach; ?>
         </nav>
 
         <div class="sidebar-foot">
-            <span class="sidebar-foot-title">ورود با نقش</span>
+            <span class="sidebar-foot-title">نقش شما</span>
             <span class="sidebar-foot-role"><?= e(role_label($user['role'])) ?></span>
         </div>
     </aside>

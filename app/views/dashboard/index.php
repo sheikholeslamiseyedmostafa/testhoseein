@@ -2,6 +2,22 @@
 /** @var array $pl @var array $counts @var string $from @var string $to @var string $today @var array $recent @var int $accounts */
 $profit = (int) $pl['profit'];
 $profitLabel = $profit >= 0 ? 'سود خالص (ریال)' : 'زیان خالص (ریال)';
+
+// دسته‌بندی اطلاعات پایه: [برچسب، آیکون، رنگ، مسیر(null=به‌زودی)، شمارش]
+$categories = [
+    ['اشخاص', 'users', 'blue', null, null],
+    ['بانک و صندوق', 'bank', 'green', null, null],
+    ['کالا و خدمات', 'box', 'orange', null, null],
+    ['سرفصل حساب‌ها', 'accounts', 'purple', 'accounts', $counts['accounts']],
+    ['پروژه‌ها', 'folder', 'teal', null, null],
+    ['مراکز هزینه', 'chart', 'red', null, null],
+    ['واحدهای سنجش', 'ruler', 'blue', null, null],
+    ['ارزها', 'dollar', 'green', null, null],
+    ['مالیات و عوارض', 'percent', 'orange', null, null],
+    ['روش‌های پرداخت', 'card', 'purple', null, null],
+    ['سال مالی', 'calendar', 'teal', null, null],
+    ['تنظیمات پایه', 'gear', 'gray', null, null],
+];
 ?>
 <div class="page-head">
     <div>
@@ -12,15 +28,6 @@ $profitLabel = $profit >= 0 ? 'سود خالص (ریال)' : 'زیان خالص 
         <a class="btn btn-primary" href="<?= e(url('vouchers/create')) ?>"><?= icon('plus') ?><span>ثبت سند جدید</span></a>
     <?php endif; ?>
 </div>
-
-<section class="quick-grid" aria-label="میانبرها">
-    <?php if (can('write')): ?>
-        <a class="quick" href="<?= e(url('vouchers/create')) ?>"><?= icon('vouchers') ?><span>سند جدید</span></a>
-        <a class="quick quick-purple" href="<?= e(url('accounts/create')) ?>"><?= icon('accounts') ?><span>حساب جدید</span></a>
-    <?php endif; ?>
-    <a class="quick quick-teal" href="<?= e(url('reports/ledger')) ?>"><?= icon('ledger') ?><span>دفتر کل</span></a>
-    <a class="quick quick-orange" href="<?= e(url('reports/trial')) ?>"><?= icon('trial') ?><span>تراز آزمایشی</span></a>
-</section>
 
 <section class="cards">
     <article class="stat stat-blue">
@@ -59,6 +66,63 @@ $profitLabel = $profit >= 0 ? 'سود خالص (ریال)' : 'زیان خالص 
         </span>
     </article>
 </section>
+
+<div class="dash-grid">
+    <section class="card">
+        <div class="panel-title">
+            <h2><?= icon('database') ?><span>دسته‌بندی اطلاعات پایه</span></h2>
+        </div>
+        <div class="cat-grid">
+            <?php foreach ($categories as [$label, $iconName, $tone, $route, $count]): ?>
+                <?php if ($route !== null && can('view')): ?>
+                    <a class="cat-tile tone-<?= e($tone) ?>" href="<?= e(url($route)) ?>">
+                        <span class="cat-head">
+                            <span class="cat-icon"><?= icon($iconName) ?></span>
+                            <span class="cat-name"><?= e($label) ?></span>
+                        </span>
+                        <span class="cat-foot">
+                            <span class="cat-count"><?= fa((string) $count) ?> مورد</span>
+                            <span class="cat-enter">ورود <?= icon('arrow', 'icon arrow-ico') ?></span>
+                        </span>
+                    </a>
+                <?php else: ?>
+                    <div class="cat-tile is-soon tone-<?= e($tone) ?>">
+                        <span class="cat-head">
+                            <span class="cat-icon"><?= icon($iconName) ?></span>
+                            <span class="cat-name"><?= e($label) ?></span>
+                        </span>
+                        <span class="cat-foot">
+                            <span class="cat-count">—</span>
+                            <span class="nav-soon">به‌زودی</span>
+                        </span>
+                    </div>
+                <?php endif; ?>
+            <?php endforeach; ?>
+        </div>
+    </section>
+
+    <section class="card">
+        <div class="panel-title">
+            <h2><?= icon('plus') ?><span>اقدامات سریع</span></h2>
+        </div>
+        <div class="quick-list">
+            <?php if (can('write')): ?>
+                <a class="quick-row tone-blue" href="<?= e(url('vouchers/create')) ?>">
+                    <span class="quick-ico"><?= icon('vouchers') ?></span><span>ثبت سند جدید</span>
+                </a>
+                <a class="quick-row tone-purple" href="<?= e(url('accounts/create')) ?>">
+                    <span class="quick-ico"><?= icon('accounts') ?></span><span>ایجاد حساب جدید</span>
+                </a>
+            <?php endif; ?>
+            <a class="quick-row tone-teal" href="<?= e(url('reports/ledger')) ?>">
+                <span class="quick-ico"><?= icon('ledger') ?></span><span>گزارش دفتر کل</span>
+            </a>
+            <a class="quick-row tone-orange" href="<?= e(url('reports/trial')) ?>">
+                <span class="quick-ico"><?= icon('trial') ?></span><span>تراز آزمایشی</span>
+            </a>
+        </div>
+    </section>
+</div>
 
 <section class="card">
     <div class="section-head">

@@ -217,7 +217,7 @@ td.actions > * { margin-left: 10px; }
 .form label { display: flex; flex-direction: column; gap: 6px; font-weight: 500; }
 .form label.checkbox { flex-direction: row; align-items: center; gap: 8px; }
 .form small { font-weight: 400; }
-input[type="text"], input[type="password"], input[type="search"], input[type="date"], select {
+input[type="text"], input[type="password"], input[type="search"], input[type="date"], input[type="email"], select {
   font: inherit; padding: 8px 10px; border: 1px solid #c3ccd9; border-radius: 8px; background: #fff; color: var(--text); width: 100%;
 }
 input:read-only { background: #f2f4f7; color: var(--muted); }

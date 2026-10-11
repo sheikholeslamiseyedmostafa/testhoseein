@@ -33,10 +33,14 @@ final class SetupController extends Controller
         } catch (RuntimeException $e) {
             $errors[] = $e->getMessage();
         }
+        if (($problem = self::sessionProblem()) !== null) {
+            $errors[] = $problem;
+        }
         $this->render('setup/form', [
             'title'  => 'نصب برنامه',
             'values' => self::defaults(),
             'errors' => $errors,
+            'manualConfig' => null,
         ]);
     }
 
@@ -124,6 +128,44 @@ final class SetupController extends Controller
         }
         flash('success', 'نصب با موفقیت انجام شد. با نام کاربری و رمز مدیر وارد شوید.');
         redirect('login');
+    }
+
+    /**
+     * وقتی توکن امنیتی فرم با نشست یکی نیست (خطای 419)، دلیل احتمالی را روی صفحه‌ی نصب نشان می‌دهد.
+     * این صفحه قبل از نصب اجرا می‌شود و هیچ چیزی در پایگاه داده نوشته نشده است.
+     */
+    public static function csrfFailed(): never
+    {
+        http_response_code(419);
+        if (!isset($_COOKIE['ACCTSESSID'])) {
+            $reason = 'مرورگر کوکی نشست را ارسال نکرد. کوکی‌ها را فعال کنید، صفحه‌ی نصب را دوباره باز کنید و فرم را از همان صفحه بفرستید.';
+        } elseif (empty($_SESSION['_csrf'])) {
+            $reason = 'نشست روی سرور پیدا نشد. معمولاً پوشه‌ی session.save_path در php.ini قابل نوشتن نیست.';
+        } else {
+            $reason = 'کد امنیتی فرم با نشست فعلی یکسان نیست. صفحه را تازه‌سازی کنید و دوباره بفرستید.';
+        }
+        $errors = [$reason];
+        if (($problem = self::sessionProblem()) !== null) {
+            $errors[] = $problem;
+        }
+        view('setup/form', ['title' => 'نصب برنامه', 'values' => self::defaults(), 'errors' => $errors, 'manualConfig' => null]);
+        exit;
+    }
+
+    /** بررسی قابل نوشتن بودن پوشه‌ی نشست PHP؛ اگر مشکل باشد متن راهنما برمی‌گرداند. */
+    public static function sessionProblem(): ?string
+    {
+        $path = (string) session_save_path();
+        if (str_contains($path, ';')) {
+            $path = substr($path, strrpos($path, ';') + 1);
+        }
+        if ($path === '') {
+            $path = sys_get_temp_dir();
+        }
+        if (!is_dir($path) || !is_writable($path)) {
+            return 'پوشه‌ی نشست PHP قابل نوشتن نیست (' . $path . '). مقدار session.save_path را در php.ini به یک پوشه‌ی قابل نوشتن (مثلاً C:\\php\\sessions) تنظیم کنید و به کاربر IIS دسترسی نوشتن بدهید.';
+        }
+        return null;
     }
 
     private function guardNotInstalled(): void

@@ -39,6 +39,10 @@ final class Router
         }
 
         if ($verb === 'POST' && !Csrf::verify()) {
+            if ($name === 'setup/store') {
+                // صفحه‌ی نصب راهنمای مشخص‌تری نشان می‌دهد (مثلاً مشکل نشست یا کوکی)
+                \App\Controllers\SetupController::csrfFailed();
+            }
             self::abort(419);
         }
 

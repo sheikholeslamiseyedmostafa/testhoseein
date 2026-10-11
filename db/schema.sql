@@ -2,7 +2,8 @@
 -- نرم‌افزار حسابداری - طرح پایگاه داده (MySQL 8.0+ / MariaDB 10.4+)
 -- ایجاد پایگاه داده (یک بار، با کاربری که دسترسی ساخت دارد):
 --   CREATE DATABASE accounting CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
--- سپس با نصب‌کننده جداول را بسازید:  php db/install.php
+-- نصب معمول: صفحه‌ی index.php?r=setup (جداول را با همین فایل می‌سازد)
+-- یا از خط فرمان:  php db/install.php
 -- ============================================================================
 
 CREATE TABLE IF NOT EXISTS users (

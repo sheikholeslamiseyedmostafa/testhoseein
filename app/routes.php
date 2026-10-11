@@ -12,10 +12,14 @@ use App\Controllers\AuthController;
 use App\Controllers\DashboardController;
 use App\Controllers\ProfileController;
 use App\Controllers\ReportController;
+use App\Controllers\SetupController;
 use App\Controllers\UserController;
 use App\Controllers\VoucherController;
 
 return [
+    'setup'           => [SetupController::class, 'form', 'GET', 'guest'],
+    'setup/store'     => [SetupController::class, 'store', 'POST', 'guest'],
+
     'login'           => [AuthController::class, 'login', 'GET', 'guest'],
     'login/submit'    => [AuthController::class, 'authenticate', 'POST', 'guest'],
     'logout'          => [AuthController::class, 'logout', 'POST', 'view'],

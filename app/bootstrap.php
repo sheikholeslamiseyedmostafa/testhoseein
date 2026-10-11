@@ -3,17 +3,9 @@ declare(strict_types=1);
 
 define('APP_ROOT', dirname(__DIR__));
 
+// اگر فایل تنظیمات نباشد، برنامه «نصب‌نشده» است و مسیریاب کاربر را به صفحه نصب تحت وب می‌فرستد.
 $configPath = APP_ROOT . '/config/config.php';
-if (!is_file($configPath)) {
-    http_response_code(500);
-    header('Content-Type: text/html; charset=UTF-8');
-    echo '<!doctype html><html lang="fa" dir="rtl"><meta charset="utf-8"><title>خطای پیکربندی</title>'
-        . '<p style="font-family:Tahoma,sans-serif">فایل <code>config/config.php</code> پیدا نشد. '
-        . 'فایل <code>config/config.sample.php</code> را کپی و به نام <code>config.php</code> تغییر دهید.</p>';
-    exit;
-}
-
-$GLOBALS['app_config'] = require $configPath;
+$GLOBALS['app_config'] = is_file($configPath) ? require $configPath : [];
 
 require APP_ROOT . '/app/helpers.php';
 

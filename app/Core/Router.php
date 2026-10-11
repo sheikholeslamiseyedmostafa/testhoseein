@@ -14,6 +14,11 @@ final class Router
         $routes = require APP_ROOT . '/app/routes.php';
         $name = is_string($_GET['r'] ?? null) ? $_GET['r'] : 'dashboard';
 
+        // تا وقتی برنامه نصب نشده، فقط صفحه‌ی نصب در دسترس است
+        if (!Installation::isInstalled() && !in_array($name, ['setup', 'setup/store'], true)) {
+            redirect('setup');
+        }
+
         if (!isset($routes[$name])) {
             self::abort(404);
         }

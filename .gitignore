@@ -1,5 +1,9 @@
 # Local configuration (contains database credentials) - never commit
 config/config.php
+config/*.tmp
+
+# Setup code created by the web installer (one-time, deleted after install)
+storage/setup-token.txt
 
 # Runtime logs
 storage/logs/*

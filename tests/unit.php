@@ -17,6 +17,7 @@ spl_autoload_register(static function (string $class): void {
     }
 });
 
+use App\Core\ConfigWriter;
 use App\Core\Installer;
 use App\Support\Jalali;
 use App\Support\Money;
@@ -84,6 +85,24 @@ $sql = "-- نرم‌افزار حسابداری - توضیح فارسی؛ با �
 $statements = Installer::splitStatements($sql);
 check('persian comments do not break statements', count($statements) === 2, (string) count($statements));
 check('persian letter with byte 0x85 kept intact', str_contains($statements[0], "'م'"));
+
+echo "ConfigWriter\n";
+$original = [
+    'app_name' => 'حسابداری "تست" \'ویژه\'',
+    'timezone' => 'Asia/Tehran',
+    'persian_digits' => true,
+    'debug' => false,
+    'session_lifetime' => 30,
+    'db' => ['driver' => 'mysql', 'host' => 'localhost', 'port' => 3306, 'name' => 'acc', 'user' => 'u', 'password' => "p\$w'o\\rd", 'charset' => 'utf8mb4'],
+];
+$rendered = ConfigWriter::render($original);
+check('rendered config starts with php tag', str_starts_with($rendered, "<?php\n"));
+$tmpConfig = sys_get_temp_dir() . '/acc-config-test-' . getmypid() . '.php';
+ConfigWriter::write($tmpConfig, $rendered);
+$loaded = require $tmpConfig;
+@unlink($tmpConfig);
+check('written config loads back identically', $loaded === $original, var_export($loaded, true));
+check('no temp file left behind', !is_file($tmpConfig . '.tmp'));
 
 echo "\n{$passed} passed, {$failed} failed\n";
 exit($failed > 0 ? 1 : 0);

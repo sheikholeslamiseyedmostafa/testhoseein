@@ -14,7 +14,13 @@ use RuntimeException;
 final class Installer
 {
     /** @return array{statements:int,seeded:int,admin_created:bool,admin_password:?string} */
-    public static function run(PDO $pdo, string $schemaSql, ?string $adminPassword = null): array
+    public static function run(
+        PDO $pdo,
+        string $schemaSql,
+        ?string $adminPassword = null,
+        string $adminUsername = 'admin',
+        string $adminName = 'مدیر سیستم'
+    ): array
     {
         $statements = self::splitStatements($schemaSql);
         foreach ($statements as $statement) {
@@ -44,7 +50,7 @@ final class Installer
             $stmt = $pdo->prepare(
                 'INSERT INTO users (username, full_name, password_hash, role, is_active) VALUES (?, ?, ?, ?, 1)'
             );
-            $stmt->execute(['admin', 'مدیر سیستم', password_hash($password, PASSWORD_DEFAULT), Auth::ROLE_ADMIN]);
+            $stmt->execute([$adminUsername, $adminName, password_hash($password, PASSWORD_DEFAULT), Auth::ROLE_ADMIN]);
             $adminCreated = true;
             $generated = $adminPassword ? null : $password;
         }

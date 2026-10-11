@@ -145,6 +145,7 @@ input:read-only { background: #f2f4f7; color: var(--muted); }
 .voucher-lines select { min-width: 220px; }
 .form-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
 .narrow-form { max-width: 560px; }
+.code-block { display: block; width: 100%; box-sizing: border-box; background: #f4f6f8; border: 1px solid #d9dee5; border-radius: 8px; padding: 12px; font: 13px/1.6 Consolas, Menlo, monospace; white-space: pre-wrap; overflow-x: auto; direction: ltr; text-align: left; resize: vertical; }
 .toolbar { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; background: var(--card); padding: 14px; border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 16px; }
 .toolbar label { display: flex; flex-direction: column; gap: 4px; font-size: .9rem; min-width: 150px; }
 .toolbar input, .toolbar select { min-width: 150px; }

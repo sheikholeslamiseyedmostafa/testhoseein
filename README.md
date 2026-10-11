@@ -35,13 +35,17 @@ app/               منطق برنامه (خارج از ریشه وب)
   views/           قالب‌ها (فارسی، راست‌به‌چپ)
   routes.php       جدول مسیرها و سطح دسترسی
 config/
-  config.sample.php   نمونه تنظیمات (config.php را از روی آن بسازید)
+  config.sample.php   نمونه تنظیمات (config.php را صفحه نصب می‌سازد)
 db/
   schema.sql       ساختار جداول MySQL
-  install.php      نصب‌کننده خط فرمان
-storage/logs/      لاگ خطاها
+  install.php      نصب‌کننده خط فرمان (جایگزین اختیاری صفحه نصب)
+release/
+  accounting-source.zip   بسته‌ی سورس برای تحویل (بدون config.php و داده)
+storage/logs/      لاگ خطاها (و کد نصب موقت storage/setup-token.txt)
 tests/unit.php     تست‌های واحد
 ```
+
+راهنمای گام‌به‌گام استقرار و جدول عیب‌یابی در [DEPLOY.md](DEPLOY.md) است.
 
 ## پیش‌نیازها
 
@@ -71,9 +75,9 @@ tests/unit.php     تست‌های واحد
    - Name: `PHP-FastCGI`
 
    (اگر از نصب‌کننده رسمی PHP یا Web Platform Installer استفاده کرده‌اید، این مرحله معمولاً انجام شده است.)
-   در `web.config` همین Handler با نام `PHP-FastCGI-Accounting` تعریف شده است؛ اگر در سطح سرور هم تعریف کرده‌اید و خطای تداخل دیدید، بخش `<handlers>` در `public/web.config` را حذف کنید.
+   در `public/web.config` همین Handler با نام `PHP_via_FastCGI` و مسیر `C:\php\php-cgi.exe` تعریف شده است. اگر PHP را در سطح سرور هم ثبت کرده‌اید، این دو تعریف تداخل می‌کنند (خطای 403 یا 500.19)؛ در این صورت بخش `<handlers>` را از `public/web.config` حذف کنید.
 
-### ۲. ساخت پایگاه داده MySQL
+### ۲. ساخت پایگاه داده MySQL (پایگاه داده‌ی خالی)
 با کاربر مدیر MySQL اجرا کنید (رمز را تغییر دهید):
 ```sql
 CREATE DATABASE accounting CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -82,31 +86,35 @@ GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, INDEX, ALTER, REFERENCES ON accoun
 FLUSH PRIVILEGES;
 ```
 
-### ۳. کپی برنامه و تنظیمات
-1. پوشه پروژه را در مسیری مثل `C:\inetpub\accounting` کپی کنید.
-2. فایل `config/config.sample.php` را به `config/config.php` کپی کنید و مقادیر `db` را تنظیم کنید (`host`، `name`، `user`، `password`).
-3. اگر تنظیمات `debug` را روی `false` نگه دارید (پیش‌فرض)، خطاها فقط در `storage/logs/app.log` ثبت می‌شوند.
+### ۳. کپی برنامه
+1. پوشه پروژه را در مسیری مثل `C:\inetpub\accounting` کپی کنید (یا فایل `release/accounting-source.zip` را در همان مسیر استخراج کنید).
+2. دسترسی نوشتن برای کاربر IIS را روی دو پوشه بدهید (صفحه نصب باید فایل تنظیمات و کد نصب را بسازد):
+   ```bat
+   icacls "C:\inetpub\accounting\storage" /grant "IIS_IUSRS:(OI)(CI)M"
+   icacls "C:\inetpub\accounting\config" /grant "IIS_IUSRS:(OI)(CI)M"
+   ```
+   (اگر AppPool اختصاصی دارید، به‌جای `IIS_IUSRS` نام `IIS AppPool\<نام AppPool>` را بنویسید.)
 
-### ۴. نصب جداول و کاربر مدیر
-از خط فرمان، داخل پوشه پروژه:
+### ۴. نصب از طریق صفحه نصب وب
+1. سایت IIS را مطابق مرحله ۵ راه‌اندازی کنید و مرورگر را روی `https://<دامنه>/index.php?r=setup` باز کنید. تا وقتی برنامه نصب نشده، همه‌ی آدرس‌ها به این صفحه می‌روند.
+2. پایگاه داده‌ی خالی را طبق مرحله ۲ بسازید.
+3. **کد نصب** را از فایل `storage/setup-token.txt` داخل پوشه پروژه روی سرور بخوانید و در فرم وارد کنید. این کد تصادفی است و فقط کسی که به فایل‌های سرور دسترسی دارد می‌تواند آن را ببیند؛ همین مانع می‌شود غریبه‌ها برنامه را نصب کنند.
+4. مشخصات پایگاه داده و حساب مدیر را وارد کنید و **نصب برنامه** را بزنید. صفحه، جداول، چارت حساب پیش‌فرض و کاربر مدیر را می‌سازد، سپس `config/config.php` را می‌نویسد و فایل کد نصب را حذف می‌کند.
+5. اگر پایگاه داده از قبل کاربر داشته باشد، نصب متوقف می‌شود (برای جلوگیری از بازنویسی). بعد از نصب موفق، صفحه‌ی نصب دیگر در دسترس نیست و آدرس آن `404` می‌دهد.
+
+**جایگزین خط فرمان** (اختیاری): اگر فایل `config/config.php` را خودتان بسازید و `db` را تنظیم کنید، می‌توانید به‌جای صفحه‌ی وب از این دستور استفاده کنید:
 ```bat
-C:\PHP\php.exe db\install.php
-```
-این دستور جداول، چارت حساب پیش‌فرض (۱۸ حساب نمونه) و کاربر **admin** را می‌سازد و رمز تصادفی را **یک‌بار** نمایش می‌دهد. می‌توانید رمز دلخواه بدهید:
-```bat
-C:\PHP\php.exe db\install.php --admin-password=رمز-حداقل-۸-کاراکتر
+C:\php\php.exe db\install.php
+C:\php\php.exe db\install.php --admin-password=رمز-حداقل-۸-کاراکتر
 ```
 اجرای مجدد نصب‌کننده داده‌های موجود را حذف نمی‌کند.
 
 ### ۵. ساخت سایت در IIS
 1. **IIS Manager → Sites → Add Website**
-2. **Physical path**: `C:\inetpub\accounting\public` (حتماً پوشه `public`؛ پوشه `config` نباید در دسترس وب باشد)
+2. **Physical path**: `C:\inetpub\accounting\public` (حتماً پوشه `public`؛ پوشه‌های `config`، `db`، `app` و `storage` در دسترس وب نیستند)
 3. Binding: HTTPS با گواهی معتبر و نام دامنه/زیردامنه‌ی سازمان
-4. دسترسی نوشتن برای کاربر `IIS_IUSRS` (یا `IIS AppPool\<نام AppPool>`) روی پوشه `storage` بدهید:
-   ```bat
-   icacls "C:\inetpub\accounting\storage" /grant "IIS_IUSRS:(OI)(CI)M"
-   ```
-5. مرورگر را باز کنید و با `admin` و رمز تولیدشده وارد شوید؛ سپس از منوی **تغییر رمز** رمز را عوض کنید.
+4. `public/web.config` به‌صورت خودکار خوانده می‌شود. نقش‌های **URL Rewrite** و **Static/Dynamic Compression** باید نصب باشند؛ در غیر این صورت IIS خطای 500.19 می‌دهد.
+5. بعد از نصب از طریق صفحه‌ی نصب، با حساب مدیری که ساختید وارد شوید و در صورت نیاز از منوی **تغییر رمز** رمز را عوض کنید.
 
 ### ۶. (اختیاری) ساخت کاربران
 از منوی **کاربران** (فقط مدیر) کاربر جدید با نقش مناسب بسازید.

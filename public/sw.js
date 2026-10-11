@@ -8,7 +8,7 @@
  *
  * برای انتشار نسخه جدید، مقدار CACHE_VERSION را تغییر دهید.
  */
-const CACHE_VERSION = 'v3';
+const CACHE_VERSION = 'v4';
 const CACHE_NAME = `accounting-static-${CACHE_VERSION}`;
 
 const PRECACHE_URLS = [

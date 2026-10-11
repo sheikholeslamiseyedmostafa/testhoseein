@@ -10,6 +10,7 @@ declare(strict_types=1);
 use App\Controllers\AccountController;
 use App\Controllers\AuthController;
 use App\Controllers\DashboardController;
+use App\Controllers\PersonController;
 use App\Controllers\ProfileController;
 use App\Controllers\ReportController;
 use App\Controllers\SetupController;
@@ -33,6 +34,12 @@ return [
     'accounts/update' => [AccountController::class, 'update', 'POST', 'write'],
     'accounts/toggle' => [AccountController::class, 'toggle', 'POST', 'write'],
     'accounts/delete' => [AccountController::class, 'destroy', 'POST', 'write'],
+    'persons'         => [PersonController::class, 'index', 'GET', 'view'],
+    'persons/create'  => [PersonController::class, 'create', 'GET', 'write'],
+    'persons/store'   => [PersonController::class, 'store', 'POST', 'write'],
+    'persons/edit'    => [PersonController::class, 'edit', 'GET', 'write'],
+    'persons/update'  => [PersonController::class, 'update', 'POST', 'write'],
+    'persons/toggle'  => [PersonController::class, 'toggle', 'POST', 'write'],
 
     'vouchers'        => [VoucherController::class, 'index', 'GET', 'view'],
     'vouchers/show'   => [VoucherController::class, 'show', 'GET', 'view'],

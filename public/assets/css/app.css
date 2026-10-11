@@ -374,3 +374,9 @@ a.cat-tile:hover { text-decoration: none; border-color: var(--c); box-shadow: 0 
 .btn .icon { width: 16px; height: 16px; }
 .section-head h2 { margin: 0; }
 .card-title .icon { width: 20px; height: 20px; color: var(--primary); }
+
+/* ---------- فرم اشخاص ---------- */
+.person-form { max-width: 820px; }
+.person-form h2 { font-size: 1rem; margin: 6px 0 0; padding-bottom: 6px; border-bottom: 1px solid var(--border); color: var(--primary-dark); }
+.form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+.form textarea { font: inherit; padding: 8px 10px; border: 1px solid #c3ccd9; border-radius: 8px; background: #fff; color: var(--text); width: 100%; resize: vertical; }

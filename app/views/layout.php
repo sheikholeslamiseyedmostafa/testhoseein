@@ -20,7 +20,7 @@ $isActive = static function (string ...$prefixes) use ($currentRoute): bool {
 $menu = [
     ['link', 'داشبورد', 'dashboard', 'dashboard', '', 'dashboard'],
     ['group', 'اطلاعات پایه', 'database', [
-        ['اشخاص', 'users', null, ''],
+        ['اشخاص', 'users', 'persons', 'view'],
         ['بانک و صندوق', 'bank', null, ''],
         ['کالا و خدمات', 'box', null, ''],
         ['سرفصل حساب‌ها', 'accounts', 'accounts', 'view'],

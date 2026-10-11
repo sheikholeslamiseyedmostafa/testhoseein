@@ -5,7 +5,7 @@ $profitLabel = $profit >= 0 ? 'سود خالص (ریال)' : 'زیان خالص 
 
 // دسته‌بندی اطلاعات پایه: [برچسب، آیکون، رنگ، مسیر(null=به‌زودی)، شمارش]
 $categories = [
-    ['اشخاص', 'users', 'blue', null, null],
+    ['اشخاص', 'users', 'blue', 'persons', $counts['persons']],
     ['بانک و صندوق', 'bank', 'green', null, null],
     ['کالا و خدمات', 'box', 'orange', null, null],
     ['سرفصل حساب‌ها', 'accounts', 'purple', 'accounts', $counts['accounts']],

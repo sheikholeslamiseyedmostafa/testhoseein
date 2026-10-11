@@ -29,6 +29,26 @@ CREATE TABLE IF NOT EXISTS accounts (
     CONSTRAINT chk_accounts_type CHECK (type IN ('asset', 'liability', 'equity', 'revenue', 'expense'))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- اشخاص (مشتری، تأمین‌کننده، ...): تعریف اطلاعات پایه
+CREATE TABLE IF NOT EXISTS persons (
+    id            INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    code          VARCHAR(20)  NOT NULL,
+    name          VARCHAR(150) NOT NULL,
+    person_type   VARCHAR(20)  NOT NULL,
+    national_id   VARCHAR(20)  NOT NULL DEFAULT '',
+    economic_code VARCHAR(20)  NOT NULL DEFAULT '',
+    phone         VARCHAR(30)  NOT NULL DEFAULT '',
+    mobile        VARCHAR(30)  NOT NULL DEFAULT '',
+    email         VARCHAR(150) NOT NULL DEFAULT '',
+    address       VARCHAR(500) NOT NULL DEFAULT '',
+    notes         VARCHAR(500) NOT NULL DEFAULT '',
+    is_active     TINYINT(1)   NOT NULL DEFAULT 1,
+    created_at    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at    DATETIME     NULL,
+    CONSTRAINT uq_persons_code UNIQUE (code),
+    CONSTRAINT chk_persons_type CHECK (person_type IN ('customer', 'supplier', 'both', 'other'))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS vouchers (
     id           INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     voucher_no   INT UNSIGNED NOT NULL,
@@ -58,3 +78,4 @@ CREATE TABLE IF NOT EXISTS voucher_lines (
 CREATE INDEX idx_vouchers_date ON vouchers (voucher_date);
 CREATE INDEX idx_lines_account ON voucher_lines (account_id);
 CREATE INDEX idx_lines_voucher ON voucher_lines (voucher_id);
+CREATE INDEX idx_persons_name ON persons (name);

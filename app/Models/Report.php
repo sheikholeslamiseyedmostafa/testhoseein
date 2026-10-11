@@ -143,6 +143,7 @@ final class Report
     {
         return [
             'accounts' => (int) Db::value('SELECT COUNT(*) FROM accounts WHERE is_active = 1'),
+            'persons'  => Person::countActive(),
             'vouchers' => (int) Db::value('SELECT COUNT(*) FROM vouchers'),
         ];
     }

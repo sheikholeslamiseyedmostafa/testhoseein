@@ -19,6 +19,7 @@ spl_autoload_register(static function (string $class): void {
 
 use App\Core\ConfigWriter;
 use App\Core\Installer;
+use App\Models\Person;
 use App\Support\Jalali;
 use App\Support\Money;
 use App\Support\Text;
@@ -103,6 +104,22 @@ $loaded = require $tmpConfig;
 @unlink($tmpConfig);
 check('written config loads back identically', $loaded === $original, var_export($loaded, true));
 check('no temp file left behind', !is_file($tmpConfig . '.tmp'));
+
+echo "Person\n";
+check('national id 10 digits (person)', Person::isValidNationalId('0012345678'));
+check('national id 11 digits (company)', Person::isValidNationalId('14001234567'));
+check('national id 9 digits rejected', !Person::isValidNationalId('123456789'));
+check('national id 12 digits rejected', !Person::isValidNationalId('123456789012'));
+check('national id with letters rejected', !Person::isValidNationalId('12345abcde'));
+check('mobile 09 + 9 digits', Person::isValidMobile('09121234567'));
+check('mobile without leading 0 rejected', !Person::isValidMobile('9121234567'));
+check('mobile wrong length rejected', !Person::isValidMobile('0912123456'));
+check('mobile with spaces rejected', !Person::isValidMobile('0912 123 4567'));
+check('phone with area code and dash', Person::isValidPhone('021-12345678'));
+check('phone with plus and brackets', Person::isValidPhone('+98 (21) 1234 5678'));
+check('phone with letters rejected', !Person::isValidPhone('021-abc'));
+check('phone too short rejected', !Person::isValidPhone('123'));
+check('person types include the four kinds', array_keys(Person::TYPES) === ['customer', 'supplier', 'both', 'other']);
 
 echo "\n{$passed} passed, {$failed} failed\n";
 exit($failed > 0 ? 1 : 0);

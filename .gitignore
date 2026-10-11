@@ -1,0 +1,14 @@
+# Local configuration (contains database credentials) - never commit
+config/config.php
+
+# Runtime logs
+storage/logs/*
+!storage/logs/.gitkeep
+
+# Dependencies / editor / OS
+vendor/
+node_modules/
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
